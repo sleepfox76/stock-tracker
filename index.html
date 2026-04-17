@@ -352,17 +352,17 @@ function setWF(f,el){
   rw();
 }
 
+function toDateStr(m){
+  return `${m[1]}-${String(m[2]).padStart(2,'0')}-${String(m[3]).padStart(2,'0')}`;
+}
+
 function parseText(text){
   const stocks=[];
-  const allDates=text.match(/(\d{4})년\s*(\d{1,2})월\s*(\d{1,2})일/g)||[];
-  let dateStr=new Date().toISOString().slice(0,10);
-  if(allDates.length){
-    const m=allDates[allDates.length-1].match(/(\d{4})년\s*(\d{1,2})월\s*(\d{1,2})일/);
-    dateStr=`${m[1]}-${String(m[2]).padStart(2,'0')}-${String(m[3]).padStart(2,'0')}`;
-  }
+  const today=new Date().toISOString().slice(0,10);
+  let currentDate=today;
   const lines=text.split('\n').map(l=>l.trim()).filter(Boolean);
   let cur=null;
-  const stopWords=['기본 통계','중복 추천','높은 괴리율','가격 괴리율','종목 추천 분석','선정된 종목','조건:','총 추천','고유 종목','평균 수익','최고 수익'];
+  const stopWords=['기본 통계','중복 추천','높은 괴리율','가격 괴리율','종목 추천 분석','선정된 종목','조건:','총 추천','고유 종목','평균 수익','최고 수익','장 시작 전','핵심 뉴스','투자자 핵심'];
   const flush=()=>{
     if(cur&&cur.name&&cur.target){
       cur.reason=(cur.reason||'').replace(/\s+/g,' ').trim().substring(0,120);
@@ -372,13 +372,16 @@ function parseText(text){
   };
   for(let i=0;i<lines.length;i++){
     const l=lines[i];
+    // 날짜 라인 감지 — 만나면 currentDate 즉시 갱신
+    const dateMatch=l.match(/(\d{4})년\s*(\d{1,2})월\s*(\d{1,2})일/);
+    if(dateMatch){currentDate=toDateStr(dateMatch);continue;}
     if(stopWords.some(w=>l.includes(w)))continue;
     const clean=l.replace(/[💰🎯📈📊💡📅✅🔄•]/g,'').trim();
     const numName=l.match(/^(\d+)\.\s+(.+)/);
     if(numName){
       const nm=numName[2].replace(/\s*\[한경\]\s*/g,'').trim();
       if(nm.length>0&&nm.length<20&&!nm.includes('투자의견')&&!nm.includes('목표주가')){
-        flush();cur={name:nm,date:dateStr};continue;
+        flush();cur={name:nm,date:currentDate};continue;
       }
     }
     if(!cur)continue;
@@ -391,7 +394,7 @@ function parseText(text){
     else if(cur.reason!==undefined&&!clean.match(/투자의견|목표주가|전일종가|상승여력/)&&clean.length>2)cur.reason+=' '+clean;
   }
   flush();
-  return{stocks,dateStr};
+  return{stocks,dateStr:currentDate};
 }
 
 async function run(){
