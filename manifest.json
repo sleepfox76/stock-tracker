@@ -2,7 +2,7 @@
   "name": "주식 종목 트래커",
   "short_name": "종목트래커",
   "description": "텔레그램 주식 종목 추천을 매일 추적하는 앱",
-  "start_url": "/",
+  "start_url": "/stock-tracker/",
   "display": "standalone",
   "background_color": "#0F1E46",
   "theme_color": "#0F1E46",
