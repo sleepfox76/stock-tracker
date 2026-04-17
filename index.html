@@ -9,7 +9,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#0F1E46">
 <link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
 <title>Stock Tracker</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
@@ -145,8 +145,7 @@ textarea:focus{outline:none;border-color:var(--navy)}
   <div class="tabbar">
     <div class="tab active" onclick="sw('input')">입력</div>
     <div class="tab" onclick="sw('watch')">관심종목<span class="tab-badge" id="wBadge" style="display:none"></span></div>
-    <div class="tab" onclick="sw('alerts')">변동알림<span class="tab-badge" id="aBadge" style="display:none"></span></div>
-    <div class="tab" onclick="sw('history')">히스토리</div>
+    <div class="tab" onclick="sw('sector')">섹터별</div>
   </div>
   <div class="panels">
     <div id="tab-input" class="panel active">
@@ -170,30 +169,18 @@ textarea:focus{outline:none;border-color:var(--navy)}
         <div class="filter-btn" onclick="setWF('down',this)">하락</div>
         <div class="filter-btn" onclick="setWF('new',this)">신규</div>
         <div class="filter-btn" onclick="setWF('same',this)">유지</div>
-        <div class="filter-btn" id="sectorToggle" onclick="toggleSectorView()">섹터별</div>
       </div>
       <div class="section-action">
         <button class="small-btn small-btn-danger" onclick="rmDown()">하락 일괄제거</button>
         <button class="small-btn" onclick="exportCSV()">CSV</button>
-        <button class="small-btn small-btn-orange" id="classifyBtn" onclick="classifySectors()">섹터 자동분류</button>
       </div>
       <div id="wb"></div>
     </div>
-    <div id="tab-alerts" class="panel">
+    <div id="tab-sector" class="panel">
       <div class="section-action">
-        <button class="small-btn small-btn-danger" onclick="if(confirm('알림을 모두 지울까요?')){db.alerts=[];sv();ral();upb()}">알림 초기화</button>
+        <button class="small-btn small-btn-orange" id="classifyBtn" onclick="classifySectors()">섹터 자동분류</button>
       </div>
-      <div id="aa"></div>
-    </div>
-    <div id="tab-history" class="panel">
-      <div class="list-header">
-        <input class="search-input" id="hs" placeholder="종목명 검색..." oninput="rh()" style="flex:1">
-        <select id="hd" onchange="rh()" style="padding:8px 10px;border-radius:20px;border:1px solid var(--border2);background:var(--bg2);color:var(--text);font-size:12px;flex-shrink:0"><option value="all">전체</option></select>
-      </div>
-      <div class="section-action">
-        <button class="small-btn small-btn-danger" onclick="if(confirm('전체 데이터를 초기화할까요?')){db={watchlist:{},history:[],alerts:[]};sv();upb();rw();ral();rh();updateHeader()}">전체 초기화</button>
-      </div>
-      <div id="hb"></div>
+      <div id="sectorBody"></div>
     </div>
   </div>
 </div>
@@ -216,13 +203,12 @@ function lsGet(){try{const v=localStorage.getItem(SK);return v?JSON.parse(v):{wa
 function sv(){try{localStorage.setItem(SK,JSON.stringify(db));}catch(e){}}
 
 function sw(t){
-  ['input','watch','alerts','history'].forEach((n,i)=>{
+  ['input','watch','sector'].forEach((n,i)=>{
     document.querySelectorAll('.tab')[i].classList.toggle('active',n===t);
     document.getElementById('tab-'+n).classList.toggle('active',n===t);
   });
-  if(t==='watch'){renderWatchStats();sectorView?renderSectorView():rw();}
-  if(t==='alerts')ral();
-  if(t==='history')rh();
+  if(t==='watch'){renderWatchStats();rw();}
+  if(t==='sector')renderSectorView();
 }
 
 function setWF(f,el){
@@ -301,8 +287,6 @@ async function classifySectors(){
   }
   sv();
   btn.textContent='섹터 재분류';btn.disabled=false;
-  sectorView=true;
-  document.getElementById('sectorToggle').classList.add('on');
   renderSectorView();
 }
 
@@ -313,8 +297,10 @@ function renderSectorView(){
   const grouped={};
   items.forEach(s=>{const sec=s.sector||'기타';if(!grouped[sec])grouped[sec]=[];grouped[sec].push(s);});
   const sorted=Object.entries(grouped).sort((a,b)=>b[1].length-a[1].length);
-  const el=document.getElementById('wb');
-  if(!sorted.length){el.innerHTML='<div class="empty-state"><div class="empty-icon">📋</div><div class="empty-text">종목이 없습니다.</div></div>';return;}
+  const el=document.getElementById('sectorBody');
+  if(!sorted.length){el.innerHTML='<div class="empty-state"><div class="empty-icon">📋</div><div class="empty-text">종목이 없습니다.<br>먼저 섹터 자동분류를 눌러주세요.</div></div>';return;}
+  const hasSector=items.some(s=>s.sector);
+  if(!hasSector){el.innerHTML='<div class="empty-state"><div class="empty-icon">🗂️</div><div class="empty-text">섹터 자동분류 버튼을 눌러주세요.</div></div>';return;}
   el.innerHTML=sorted.map(([sec,stocks],gi)=>{
     const emoji=SECTOR_EMOJI[sec]||'📌';
     const gaps=stocks.filter(s=>s.gap);
@@ -435,9 +421,6 @@ function upb(){
   const wc=Object.keys(db.watchlist).length;
   const wb=document.getElementById('wBadge');
   wb.textContent=wc;wb.style.display=wc?'':'none';
-  const ac=db.alerts.length;
-  const ab=document.getElementById('aBadge');
-  ab.textContent=ac;ab.style.display=ac?'':'none';
 }
 
 function renderWatchStats(){
@@ -551,13 +534,8 @@ function ral(){
 
 function rh(){
   const q=(document.getElementById('hs').value||'').toLowerCase();
-  const sel=document.getElementById('hd');
-  const cv=sel.value;
-  const dates=[...new Set(db.history.map(s=>s.date).filter(Boolean))].sort().reverse();
-  sel.innerHTML='<option value="all">전체</option>'+dates.map(d=>`<option value="${d}"${d===cv?' selected':''}>${d}</option>`).join('');
-  let items=[...db.history].reverse();
+  let items=[...db.history].sort((a,b)=>(b.date||'').localeCompare(a.date||''));
   if(q)items=items.filter(s=>s.name.toLowerCase().includes(q));
-  if(sel.value!=='all')items=items.filter(s=>s.date===sel.value);
   const el=document.getElementById('hb');
   if(!items.length){el.innerHTML='<div class="empty-state"><div class="empty-icon">📁</div><div class="empty-text">히스토리가 없습니다.</div></div>';return;}
   el.innerHTML=items.map(s=>`<div class="hist-item"><div><div class="hist-name">${s.name}</div><div class="hist-date">${s.date||''}</div></div><div><div class="hist-target">${s.target?s.target.toLocaleString()+'원':'-'}</div><div class="hist-gap">${s.gap?s.gap.toFixed(1)+'%':''}</div></div></div>`).join('');
