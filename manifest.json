@@ -4,8 +4,8 @@
   "description": "텔레그램 주식 종목 추천을 매일 추적하는 앱",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#111111",
-  "theme_color": "#111111",
+  "background_color": "#0F1E46",
+  "theme_color": "#0F1E46",
   "orientation": "portrait",
   "icons": [
     {
