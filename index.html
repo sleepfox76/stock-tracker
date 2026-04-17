@@ -7,21 +7,20 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="종목트래커">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="theme-color" content="#111111">
+<meta name="theme-color" content="#0F1E46">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
-<title>종목 트래커</title>
+<title>Stock Tracker</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 :root{
   --bg:#fff;--bg2:#f5f5f5;--bg3:#efefef;
   --text:#111;--text2:#666;--text3:#aaa;
   --border:#e8e8e8;--border2:#ddd;
-  --up-bg:#e6f4ea;--up-text:#1a5c2a;--up-border:#a7d7b2;
-  --down-bg:#fde8e8;--down-text:#b01c1c;--down-border:#f5c2c2;
-  --new-bg:#eee8ff;--new-text:#4a1d95;--new-border:#c4b5fd;
-  --primary:#111;--primary-text:#fff;
-  --danger-bg:#fde8e8;--danger-text:#b01c1c;
+  --up-bg:#e6f4ea;--up-text:#1a5c2a;
+  --down-bg:#fde8e8;--down-text:#b01c1c;
+  --new-bg:#eee8ff;--new-text:#4a1d95;
+  --navy:#0F1E46;--orange:#FF8C28;
   --radius:10px;--radius-sm:6px;
   --safe-top:env(safe-area-inset-top);
   --safe-bot:env(safe-area-inset-bottom);
@@ -31,76 +30,74 @@
     --bg:#111;--bg2:#1c1c1e;--bg3:#2c2c2e;
     --text:#f0f0f0;--text2:#aaa;--text3:#666;
     --border:#2c2c2e;--border2:#3a3a3c;
-    --up-bg:#0d2e17;--up-text:#6fcf97;--up-border:#1e5c30;
-    --down-bg:#2d0f0f;--down-text:#f87171;--down-border:#5c1a1a;
-    --new-bg:#1e1040;--new-text:#a78bfa;--new-border:#3d2080;
-    --primary:#f0f0f0;--primary-text:#111;
-    --danger-bg:#2d0f0f;--danger-text:#f87171;
+    --up-bg:#0d2e17;--up-text:#6fcf97;
+    --down-bg:#2d0f0f;--down-text:#f87171;
+    --new-bg:#1e1040;--new-text:#a78bfa;
   }
 }
 html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
 #app{display:flex;flex-direction:column;height:100%;padding-top:var(--safe-top)}
-
-/* 헤더 */
-.header{padding:12px 16px 8px;border-bottom:0.5px solid var(--border);flex-shrink:0}
-.header h1{font-size:17px;font-weight:700}
-.header-sub{font-size:12px;color:var(--text3);margin-top:1px}
-
-/* 탭바 */
+.header{background:var(--navy);padding:14px 16px 10px;flex-shrink:0}
+.header h1{font-size:18px;font-weight:700;color:#fff;letter-spacing:.5px}
+.header h1 span{color:var(--orange)}
+.header-sub{font-size:12px;color:rgba(255,255,255,.5);margin-top:2px}
 .tabbar{display:flex;border-bottom:0.5px solid var(--border);flex-shrink:0;background:var(--bg)}
-.tab{flex:1;padding:10px 4px;font-size:12px;font-weight:500;color:var(--text3);border-bottom:2px solid transparent;text-align:center;cursor:pointer;transition:color .15s}
-.tab.active{color:var(--text);border-bottom-color:var(--text)}
+.tab{flex:1;padding:10px 4px;font-size:12px;font-weight:500;color:var(--text3);border-bottom:2px solid transparent;text-align:center;cursor:pointer}
+.tab.active{color:var(--navy);border-bottom-color:var(--orange)}
 .tab-badge{display:inline-block;background:#e24b4b;color:#fff;font-size:9px;font-weight:700;padding:1px 5px;border-radius:10px;margin-left:3px;vertical-align:middle}
-
-/* 패널 */
 .panels{flex:1;overflow:hidden;position:relative}
 .panel{position:absolute;inset:0;overflow-y:auto;display:none;-webkit-overflow-scrolling:touch}
 .panel.active{display:block}
-
-/* 입력 패널 */
 .input-area{padding:16px}
 textarea{width:100%;min-height:130px;font-size:14px;padding:12px;border:1px solid var(--border2);border-radius:var(--radius);background:var(--bg2);color:var(--text);resize:none;font-family:inherit;line-height:1.5}
-textarea:focus{outline:none;border-color:var(--text2)}
+textarea:focus{outline:none;border-color:var(--navy)}
 .btn-row{display:flex;gap:8px;margin-top:10px}
 .btn{padding:11px 16px;border-radius:var(--radius);font-size:14px;font-weight:600;border:none;cursor:pointer;flex:1}
-.btn-primary{background:var(--primary);color:var(--primary-text)}
+.btn-primary{background:var(--navy);color:#fff}
 .btn-secondary{background:var(--bg3);color:var(--text2)}
-.btn-danger{background:var(--danger-bg);color:var(--danger-text)}
-.parse-result{margin-top:14px}
-.result-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.btn-danger{background:var(--down-bg);color:var(--down-text)}
+.result-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:12px}
 .result-card{background:var(--bg2);border-radius:var(--radius-sm);padding:10px 8px;text-align:center}
 .result-num{font-size:22px;font-weight:700}
 .result-label{font-size:10px;color:var(--text3);margin-top:2px}
 .goto-row{display:flex;gap:8px;margin-top:10px}
-
-/* 통계 카드 */
 .stat-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:12px 16px 0}
 .stat-card{background:var(--bg2);border-radius:var(--radius-sm);padding:10px 8px;text-align:center}
 .stat-num{font-size:20px;font-weight:700}
 .stat-label{font-size:10px;color:var(--text3);margin-top:2px}
-
-/* 종목 리스트 */
 .list-header{padding:10px 16px;display:flex;gap:8px;align-items:center;border-bottom:0.5px solid var(--border)}
 .search-input{flex:1;padding:8px 12px;border-radius:20px;border:1px solid var(--border2);background:var(--bg2);color:var(--text);font-size:14px}
 .search-input:focus{outline:none}
-.filter-btn{padding:8px 12px;border-radius:20px;border:1px solid var(--border2);background:var(--bg2);color:var(--text2);font-size:12px;font-weight:500;white-space:nowrap}
-.filter-btn.on{background:var(--text);color:var(--primary-text);border-color:var(--text)}
-
-.stock-item{padding:14px 16px;border-bottom:0.5px solid var(--border);display:flex;align-items:center;gap:10px}
+.filters{display:flex;gap:6px;padding:8px 16px;overflow-x:auto;scrollbar-width:none}
+.filters::-webkit-scrollbar{display:none}
+.filter-btn{padding:6px 14px;border-radius:20px;border:1px solid var(--border2);background:var(--bg2);color:var(--text2);font-size:12px;font-weight:500;white-space:nowrap;cursor:pointer;flex-shrink:0}
+.filter-btn.on{background:var(--navy);color:#fff;border-color:var(--navy)}
+.section-action{padding:6px 16px 8px;display:flex;justify-content:flex-end;gap:8px}
+.small-btn{padding:7px 12px;border-radius:var(--radius-sm);font-size:12px;font-weight:600;border:1px solid var(--border2);background:var(--bg2);color:var(--text2);cursor:pointer}
+.small-btn-danger{background:var(--down-bg);color:var(--down-text);border-color:var(--down-text)}
+.small-btn-orange{background:var(--orange);color:#fff;border-color:var(--orange)}
+.stock-item{padding:14px 16px;border-bottom:0.5px solid var(--border);display:flex;align-items:center;gap:10px;cursor:pointer}
+.stock-item:active{background:var(--bg2)}
 .stock-info{flex:1;min-width:0}
-.stock-name{font-size:15px;font-weight:600;display:flex;align-items:center;gap:6px}
+.stock-name{font-size:15px;font-weight:600;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
 .stock-meta{font-size:12px;color:var(--text3);margin-top:3px}
 .stock-right{text-align:right;flex-shrink:0}
 .stock-target{font-size:15px;font-weight:600}
 .stock-gap{font-size:12px;margin-top:2px}
-
 .badge{display:inline-block;font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px}
 .b-up{background:var(--up-bg);color:var(--up-text)}
 .b-down{background:var(--down-bg);color:var(--down-text)}
 .b-new{background:var(--new-bg);color:var(--new-text)}
 .b-same{background:var(--bg3);color:var(--text2)}
-
-/* 상세 모달 */
+.sector-group{border-bottom:0.5px solid var(--border)}
+.sector-header{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;cursor:pointer}
+.sector-header:active{background:var(--bg2)}
+.sector-title{font-size:14px;font-weight:700;display:flex;align-items:center;gap:8px}
+.sector-count{font-size:11px;color:var(--text3);font-weight:400}
+.sector-arrow{font-size:11px;color:var(--text3);transition:transform .2s;display:inline-block}
+.sector-arrow.open{transform:rotate(90deg)}
+.sector-stocks{display:none}
+.sector-stocks.open{display:block}
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:100;display:none;align-items:flex-end}
 .modal-overlay.open{display:flex}
 .modal{background:var(--bg);border-radius:20px 20px 0 0;padding:0 0 calc(20px + var(--safe-bot));width:100%;max-height:85vh;overflow-y:auto}
@@ -108,68 +105,41 @@ textarea:focus{outline:none;border-color:var(--text2)}
 .modal-title{font-size:18px;font-weight:700;padding:16px 16px 0}
 .modal-section{padding:12px 16px;border-bottom:0.5px solid var(--border)}
 .modal-label{font-size:11px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
-.modal-value{font-size:15px;font-weight:500}
-.history-list{display:flex;flex-direction:column;gap:6px}
+.history-list{display:flex;flex-direction:column;gap:8px}
 .history-item{display:flex;justify-content:space-between;align-items:center;font-size:13px}
 .history-date{color:var(--text3)}
 .history-target{font-weight:600}
 .history-diff{font-size:11px;padding:2px 6px;border-radius:10px}
 .trend-up{background:var(--up-bg);color:var(--up-text)}
 .trend-down{background:var(--down-bg);color:var(--down-text)}
-.mini-chart{height:50px;margin-top:8px;position:relative}
+.mini-chart{height:50px;margin-top:8px}
 .chart-bar-wrap{display:flex;align-items:flex-end;height:100%;gap:3px}
-.chart-bar{flex:1;border-radius:3px 3px 0 0;min-height:4px;background:var(--text3);transition:background .2s}
-.chart-bar.peak{background:#1e6b2e}
-
-/* 알림 패널 */
+.chart-bar{flex:1;border-radius:3px 3px 0 0;min-height:4px;background:var(--text3)}
+.chart-bar.peak{background:var(--orange)}
 .alert-section{padding:8px 16px 4px}
 .alert-section-title{font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px}
 .alert-item{padding:12px 14px;border-radius:var(--radius);margin-bottom:8px;font-size:13px;line-height:1.5}
-.a-up{background:var(--up-bg);border:1px solid var(--up-border)}
-.a-down{background:var(--down-bg);border:1px solid var(--down-border)}
-.a-new{background:var(--new-bg);border:1px solid var(--new-border)}
+.a-up{background:var(--up-bg);border:1px solid #a7d7b2}
+.a-down{background:var(--down-bg);border:1px solid #f5c2c2}
+.a-new{background:var(--new-bg);border:1px solid #c4b5fd}
 .alert-name{font-weight:700;font-size:14px}
-.alert-detail{margin-top:2px;opacity:.8}
-.alert-date{font-size:11px;opacity:.6;margin-top:2px}
 .alert-rm-btn{margin-top:6px;padding:5px 12px;border-radius:var(--radius-sm);font-size:12px;font-weight:600;border:none;cursor:pointer;background:rgba(0,0,0,.08);color:var(--down-text)}
-
-/* 빈 상태 */
+.hist-item{padding:12px 16px;border-bottom:0.5px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+.hist-name{font-size:14px;font-weight:600}
+.hist-date{font-size:11px;color:var(--text3);margin-top:2px}
+.hist-target{font-size:14px;font-weight:600;text-align:right}
+.hist-gap{font-size:11px;color:var(--text3);margin-top:2px;text-align:right}
 .empty-state{padding:60px 20px;text-align:center;color:var(--text3)}
 .empty-icon{font-size:40px;margin-bottom:12px}
 .empty-text{font-size:14px;line-height:1.6}
-
-/* 히스토리 */
-.hist-item{padding:12px 16px;border-bottom:0.5px solid var(--border);display:flex;justify-content:space-between;align-items:center}
-.hist-left .hist-name{font-size:14px;font-weight:600}
-.hist-left .hist-date{font-size:11px;color:var(--text3);margin-top:2px}
-.hist-right{text-align:right}
-.hist-target{font-size:14px;font-weight:600}
-.hist-gap{font-size:11px;color:var(--text3);margin-top:2px}
-
-.section-action{padding:8px 16px;display:flex;justify-content:flex-end;gap:8px}
-.small-btn{padding:7px 12px;border-radius:var(--radius-sm);font-size:12px;font-weight:600;border:1px solid var(--border2);background:var(--bg2);color:var(--text2);cursor:pointer}
-.small-btn-danger{background:var(--danger-bg);color:var(--danger-text);border-color:var(--down-border)}
 @keyframes spin{to{transform:rotate(360deg)}}
-
-.filters{display:flex;gap:6px;padding:8px 16px;overflow-x:auto;scrollbar-width:none}
-.filters::-webkit-scrollbar{display:none}
-.sector-group{border-bottom:0.5px solid var(--border)}
-.sector-header{display:flex;align-items:center;justify-content:space-between;padding:12px 16px 10px;cursor:pointer;user-select:none}
-.sector-title{font-size:14px;font-weight:700;display:flex;align-items:center;gap:8px}
-.sector-count{font-size:11px;color:var(--text3);font-weight:400;margin-left:4px}
-.sector-arrow{font-size:11px;color:var(--text3);transition:transform .2s}
-.sector-arrow.open{transform:rotate(90deg)}
-.sector-stocks{display:none}
-.sector-stocks.open{display:block}
-.classifying{text-align:center;padding:32px 16px;color:var(--text3);font-size:13px}
-.classify-spinner{display:inline-block;width:16px;height:16px;border:2px solid var(--border2);border-top-color:var(--text);border-radius:50%;animation:spin .8s linear infinite;margin-right:6px;vertical-align:middle}
-@keyframes spin{to{transform:rotate(360deg)}}
+.spinner{display:inline-block;width:16px;height:16px;border:2px solid var(--border2);border-top-color:var(--navy);border-radius:50%;animation:spin .8s linear infinite;vertical-align:middle;margin-right:6px}
 </style>
 </head>
 <body>
 <div id="app">
   <div class="header">
-    <h1>종목 트래커</h1>
+    <h1>STOCK <span>TRACKER</span></h1>
     <div class="header-sub" id="headerSub">관심 종목을 추적하세요</div>
   </div>
   <div class="tabbar">
@@ -179,11 +149,9 @@ textarea:focus{outline:none;border-color:var(--text2)}
     <div class="tab" onclick="sw('history')">히스토리</div>
   </div>
   <div class="panels">
-
-    <!-- 입력 -->
     <div id="tab-input" class="panel active">
       <div class="input-area">
-        <textarea id="msgInput" placeholder="텔레그램 메시지를 그대로 붙여넣으세요.&#10;&#10;💰 투자의견 / 🎯 목표주가 / 📈 전일종가 형식을 자동 파싱합니다."></textarea>
+        <textarea id="msgInput" placeholder="텔레그램 메시지를 그대로 붙여넣으세요.&#10;&#10;날짜가 여러 개 있어도 날짜별로 자동 분류됩니다."></textarea>
         <div class="btn-row">
           <button class="btn btn-primary" onclick="run()">파싱 + 저장</button>
           <button class="btn btn-secondary" onclick="document.getElementById('msgInput').value='';document.getElementById('pr').innerHTML=''">지우기</button>
@@ -191,14 +159,12 @@ textarea:focus{outline:none;border-color:var(--text2)}
         <div id="pr"></div>
       </div>
     </div>
-
-    <!-- 관심종목 -->
     <div id="tab-watch" class="panel">
       <div class="stat-row" id="watchStats"></div>
       <div class="list-header">
         <input class="search-input" id="ws" placeholder="종목명 검색..." oninput="rw()">
       </div>
-      <div class="filters" id="watchFilters">
+      <div class="filters">
         <div class="filter-btn on" onclick="setWF('all',this)">전체</div>
         <div class="filter-btn" onclick="setWF('up',this)">상향</div>
         <div class="filter-btn" onclick="setWF('down',this)">하락</div>
@@ -209,26 +175,20 @@ textarea:focus{outline:none;border-color:var(--text2)}
       <div class="section-action">
         <button class="small-btn small-btn-danger" onclick="rmDown()">하락 일괄제거</button>
         <button class="small-btn" onclick="exportCSV()">CSV</button>
-        <button class="small-btn" id="classifyBtn" onclick="classifySectors()">섹터 분류</button>
+        <button class="small-btn small-btn-orange" id="classifyBtn" onclick="classifySectors()">섹터 자동분류</button>
       </div>
       <div id="wb"></div>
     </div>
-
-    <!-- 변동알림 -->
     <div id="tab-alerts" class="panel">
       <div class="section-action">
         <button class="small-btn small-btn-danger" onclick="if(confirm('알림을 모두 지울까요?')){db.alerts=[];sv();ral();upb()}">알림 초기화</button>
       </div>
       <div id="aa"></div>
     </div>
-
-    <!-- 히스토리 -->
     <div id="tab-history" class="panel">
       <div class="list-header">
         <input class="search-input" id="hs" placeholder="종목명 검색..." oninput="rh()" style="flex:1">
-        <select id="hd" onchange="rh()" style="padding:8px 10px;border-radius:20px;border:1px solid var(--border2);background:var(--bg2);color:var(--text);font-size:12px;flex-shrink:0">
-          <option value="all">전체</option>
-        </select>
+        <select id="hd" onchange="rh()" style="padding:8px 10px;border-radius:20px;border:1px solid var(--border2);background:var(--bg2);color:var(--text);font-size:12px;flex-shrink:0"><option value="all">전체</option></select>
       </div>
       <div class="section-action">
         <button class="small-btn small-btn-danger" onclick="if(confirm('전체 데이터를 초기화할까요?')){db={watchlist:{},history:[],alerts:[]};sv();upb();rw();ral();rh();updateHeader()}">전체 초기화</button>
@@ -238,9 +198,8 @@ textarea:focus{outline:none;border-color:var(--text2)}
   </div>
 </div>
 
-<!-- 상세 모달 -->
 <div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
-  <div class="modal" id="modal">
+  <div class="modal">
     <div class="modal-handle"></div>
     <div class="modal-title" id="modalTitle"></div>
     <div id="modalBody"></div>
@@ -248,23 +207,65 @@ textarea:focus{outline:none;border-color:var(--text2)}
 </div>
 
 <script>
+const SK='stk_pwa_v1';
+let db={watchlist:{},history:[],alerts:[]};
+let wFilter='all';
 let sectorView=false;
+
+function lsGet(){try{const v=localStorage.getItem(SK);return v?JSON.parse(v):{watchlist:{},history:[],alerts:[]};}catch(e){return{watchlist:{},history:[],alerts:[]};}}
+function sv(){try{localStorage.setItem(SK,JSON.stringify(db));}catch(e){}}
+
+function sw(t){
+  ['input','watch','alerts','history'].forEach((n,i)=>{
+    document.querySelectorAll('.tab')[i].classList.toggle('active',n===t);
+    document.getElementById('tab-'+n).classList.toggle('active',n===t);
+  });
+  if(t==='watch'){renderWatchStats();sectorView?renderSectorView():rw();}
+  if(t==='alerts')ral();
+  if(t==='history')rh();
+}
+
+function setWF(f,el){
+  wFilter=f;sectorView=false;
+  document.getElementById('sectorToggle').classList.remove('on');
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('on'));
+  el.classList.add('on');
+  rw();
+}
 
 function toggleSectorView(){
   sectorView=!sectorView;
-  const btn=document.getElementById('sectorToggle');
-  btn.classList.toggle('on',sectorView);
+  document.getElementById('sectorToggle').classList.toggle('on',sectorView);
+  document.querySelectorAll('.filter-btn').forEach((b,i)=>{if(i<5)b.classList.toggle('on',!sectorView&&i===0);});
   if(sectorView){
-    const items=Object.values(db.watchlist);
-    const noSector=items.filter(s=>!s.sector).length;
-    if(noSector>0&&noSector===items.length){
-      document.getElementById('wb').innerHTML='<div style="text-align:center;padding:20px 16px;color:var(--text3);font-size:13px">섹터 분류 버튼을 눌러 자동 분류해주세요.</div>';
-      return;
-    }
-    renderSectorView();
-  } else {
-    rw();
+    const noSector=Object.values(db.watchlist).filter(s=>!s.sector).length;
+    if(noSector===Object.keys(db.watchlist).length&&noSector>0){
+      document.getElementById('wb').innerHTML='<div style="text-align:center;padding:24px 16px;color:var(--text3);font-size:13px">먼저 "섹터 자동분류" 버튼을 눌러주세요.</div>';
+    } else renderSectorView();
+  } else rw();
+}
+
+// 섹터 분류 — 종목명 기반 로컬 규칙 (API 없이 동작)
+const SECTOR_RULES={
+  '반도체':['삼성전자','SK하이닉스','한미반도체','리노공업','HPSP','DB하이텍','원익IPS','테스','피에스케이','피에스케이홀딩스','대덕전자','이오테크닉스','자화전자','아이씨티케이','씨어스','삼양엔씨켐','브이엠','디케이티','유니셈'],
+  '조선/방산':['HD한국조선해양','HD현대중공업','삼성중공업','한화오션','한화에어로스페이스','현대로템','LIG넥스원','한국항공우주','풍산','대양전기공업','HD현대마린솔루션','일진전기'],
+  'IT/플랫폼':['NAVER','카카오','LG씨엔에스','삼성에스디에스','더존비즈온','카카오페이','카카오뱅크'],
+  '바이오/제약':['유한양행','한미약품','녹십자','셀트리온','HK이노엔','클래시스','파마리서치','에이프릴바이오','넥스트바이오메디컬','오스코텍','대원제약','SK바이오팜','티앤엘'],
+  '자동차':['현대차','기아','현대모비스','현대위아','HL만도','현대지에프홀딩스','한국단자','HL DI'],
+  '에너지/전력':['한국전력','두산에너빌리티','산일전기','효성중공업','LS ELECTRIC','한화','DL이앤씨','파미셀','LS에코에너지','에스엠'],
+  '금융/증권':['삼성생명','한국금융지주','미래에셋증권','키움증권','BNK금융지주','한화투자증권','KB금융','신한지주'],
+  '소비재/유통':['아모레퍼시픽','LG생활건강','이마트','신세계','현대백화점','롯데쇼핑','롯데칠성','한국콜마','클리오','실리콘투','에이피알','CJ프레시웨이','한섬','알멕'],
+  '엔터/미디어':['하이브','에스엠','와이지엔터테인먼트','JYP엔터테인먼트','카카오엔터','NC','넷마블'],
+  '화학/소재':['효성티앤씨','금호석유화학','LG화학','롯데케미칼','SKC','영원무역','팬오션'],
+  '통신':['SK텔레콤','KT','LG유플러스','쏠리드','케이엠더블유'],
+  '건설/부동산':['IPARK현대산업개발','DL이앤씨','GS건설','대우건설','HDC현대산업개발'],
+};
+
+function guessSector(name){
+  for(const [sec,names] of Object.entries(SECTOR_RULES)){
+    if(names.some(n=>name.includes(n)||n.includes(name)))return sec;
   }
+  return '기타';
 }
 
 async function classifySectors(){
@@ -272,33 +273,37 @@ async function classifySectors(){
   if(!items.length){alert('관심종목이 없습니다.');return;}
   const btn=document.getElementById('classifyBtn');
   btn.textContent='분류중...';btn.disabled=true;
-  document.getElementById('wb').innerHTML='<div style="text-align:center;padding:32px 16px;color:var(--text3);font-size:13px"><span style="display:inline-block;width:16px;height:16px;border:2px solid var(--border2);border-top-color:var(--text);border-radius:50%;animation:spin .8s linear infinite;margin-right:6px;vertical-align:middle"></span>AI가 섹터를 분류하는 중...</div>';
-  const names=items.map(s=>s.name);
-  try{
-    const res=await fetch('https://api.anthropic.com/v1/messages',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({
-        model:'claude-sonnet-4-20250514',
-        max_tokens:1000,
-        messages:[{role:'user',content:`다음 한국 주식 종목들을 섹터별로 분류해주세요. 반드시 JSON만 반환하고 다른 텍스트는 절대 없어야 합니다.\n\n섹터 목록: 반도체, IT/플랫폼, 바이오/제약, 조선/방산, 자동차, 에너지/전력, 금융/증권, 소비재/유통, 엔터/미디어, 화학/소재, 건설/부동산, 통신, 기타\n\n종목: ${names.join(', ')}\n\n응답(JSON만): {"종목명":"섹터명"}`}]
-      })
-    });
-    const data=await res.json();
-    const text=data.content.map(c=>c.text||'').join('');
-    const clean=text.replace(/```json|```/g,'').trim();
-    const sectorMap=JSON.parse(clean);
-    items.forEach(s=>{if(sectorMap[s.name])db.watchlist[s.name].sector=sectorMap[s.name];});
-    sv();
-    btn.textContent='섹터 재분류';btn.disabled=false;
-    sectorView=true;
-    document.getElementById('sectorToggle').classList.add('on');
-    renderSectorView();
-  }catch(e){
-    btn.textContent='섹터 분류';btn.disabled=false;
-    alert('분류 중 오류가 발생했습니다.');
-    rw();
+  // 로컬 규칙으로 먼저 분류
+  items.forEach(s=>{
+    if(!s.sector)db.watchlist[s.name].sector=guessSector(s.name);
+  });
+  // 미분류 종목만 추출
+  const unclassified=items.filter(s=>!s.sector||s.sector==='기타').map(s=>s.name);
+  if(unclassified.length>0){
+    // Claude API로 추가 분류 시도
+    try{
+      const res=await fetch('https://api.anthropic.com/v1/messages',{
+        method:'POST',
+        headers:{'Content-Type':'application/json','anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+        body:JSON.stringify({
+          model:'claude-haiku-4-5-20251001',
+          max_tokens:800,
+          messages:[{role:'user',content:`한국 주식 종목을 섹터로 분류해주세요. JSON만 반환하세요.\n섹터: 반도체, IT/플랫폼, 바이오/제약, 조선/방산, 자동차, 에너지/전력, 금융/증권, 소비재/유통, 엔터/미디어, 화학/소재, 건설/부동산, 통신, 기타\n종목: ${unclassified.join(',')}\n형식: {"종목명":"섹터명"}`}]
+        })
+      });
+      if(res.ok){
+        const data=await res.json();
+        const txt=data.content.map(c=>c.text||'').join('').replace(/```json|```/g,'').trim();
+        const map=JSON.parse(txt);
+        unclassified.forEach(n=>{if(map[n])db.watchlist[n].sector=map[n];});
+      }
+    }catch(e){}
   }
+  sv();
+  btn.textContent='섹터 재분류';btn.disabled=false;
+  sectorView=true;
+  document.getElementById('sectorToggle').classList.add('on');
+  renderSectorView();
 }
 
 const SECTOR_EMOJI={'반도체':'🔵','IT/플랫폼':'💻','바이오/제약':'💊','조선/방산':'⚓','자동차':'🚗','에너지/전력':'⚡','금융/증권':'🏦','소비재/유통':'🛍','엔터/미디어':'🎵','화학/소재':'🧪','건설/부동산':'🏗','통신':'📡','기타':'📌'};
@@ -316,8 +321,8 @@ function renderSectorView(){
     const avgGap=gaps.length?(gaps.reduce((a,s)=>a+s.gap,0)/gaps.length).toFixed(1):'-';
     const rows=stocks.sort((a,b)=>(b.gap||0)-(a.gap||0)).map(s=>{
       const badge=s.status==='up'?'<span class="badge b-up">상향</span>':s.status==='down'?'<span class="badge b-down">하락</span>':s.status==='new'?'<span class="badge b-new">신규</span>':'';
-      const gColor=s.gap>=50?'var(--up-text)':s.gap>=30?'var(--text)':'var(--text3)';
-      return `<div class="stock-item" onclick="openDetail('${s.name}')"><div class="stock-info"><div class="stock-name">${s.name} ${badge}</div><div class="stock-meta">${s.prev?s.prev.toLocaleString()+'원':''}</div></div><div class="stock-right"><div class="stock-target">${s.target?s.target.toLocaleString()+'원':'-'}</div><div class="stock-gap" style="color:${gColor}">${s.gap?s.gap.toFixed(1)+'%':''}</div></div></div>`;
+      const gColor=(s.gap||0)>=50?'var(--up-text)':(s.gap||0)>=30?'var(--text)':'var(--text3)';
+      return `<div class="stock-item" onclick="openDetail('${s.name.replace(/'/g,"\\'")}')"><div class="stock-info"><div class="stock-name">${s.name} ${badge}</div><div class="stock-meta">${s.prev?s.prev.toLocaleString()+'원':''}</div></div><div class="stock-right"><div class="stock-target">${s.target?s.target.toLocaleString()+'원':'-'}</div><div class="stock-gap" style="color:${gColor}">${s.gap?s.gap.toFixed(1)+'%':''}</div></div></div>`;
     }).join('');
     return `<div class="sector-group"><div class="sector-header" onclick="toggleSector(${gi})"><div class="sector-title">${emoji} ${sec} <span class="sector-count">${stocks.length}종목 · 평균 ${avgGap}%</span></div><span class="sector-arrow open" id="sarr-${gi}">▶</span></div><div class="sector-stocks open" id="ssec-${gi}">${rows}</div></div>`;
   }).join('');
@@ -328,33 +333,7 @@ function toggleSector(i){
   document.getElementById('sarr-'+i).classList.toggle('open');
 }
 
-
-let db={watchlist:{},history:[],alerts:[]};
-let wFilter='all';
-
-function lsGet(){try{const v=localStorage.getItem(SK);return v?JSON.parse(v):{watchlist:{},history:[],alerts:[]};}catch(e){return{watchlist:{},history:[],alerts:[]};}}
-function sv(){try{localStorage.setItem(SK,JSON.stringify(db));}catch(e){}}
-
-function sw(t){
-  ['input','watch','alerts','history'].forEach((n,i)=>{
-    document.querySelectorAll('.tab')[i].classList.toggle('active',n===t);
-    document.getElementById('tab-'+n).classList.toggle('active',n===t);
-  });
-  if(t==='watch'){rw();renderWatchStats();}
-  if(t==='alerts')ral();
-  if(t==='history')rh();
-}
-
-function setWF(f,el){
-  wFilter=f;
-  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('on'));
-  el.classList.add('on');
-  rw();
-}
-
-function toDateStr(m){
-  return `${m[1]}-${String(m[2]).padStart(2,'0')}-${String(m[3]).padStart(2,'0')}`;
-}
+function toDateStr(m){return `${m[1]}-${String(m[2]).padStart(2,'0')}-${String(m[3]).padStart(2,'0')}`;}
 
 function parseText(text){
   const stocks=[];
@@ -362,7 +341,7 @@ function parseText(text){
   let currentDate=today;
   const lines=text.split('\n').map(l=>l.trim()).filter(Boolean);
   let cur=null;
-  const stopWords=['기본 통계','중복 추천','높은 괴리율','가격 괴리율','종목 추천 분석','선정된 종목','조건:','총 추천','고유 종목','평균 수익','최고 수익','장 시작 전','핵심 뉴스','투자자 핵심'];
+  const stopWords=['기본 통계','중복 추천','높은 괴리율','가격 괴리율','종목 추천 분석','선정된 종목','조건:','총 추천','고유 종목','평균 수익','최고 수익','장 시작 전','핵심 뉴스','투자자 핵심','브리핑'];
   const flush=()=>{
     if(cur&&cur.name&&cur.target){
       cur.reason=(cur.reason||'').replace(/\s+/g,' ').trim().substring(0,120);
@@ -372,11 +351,10 @@ function parseText(text){
   };
   for(let i=0;i<lines.length;i++){
     const l=lines[i];
-    // 날짜 라인 감지 — 만나면 currentDate 즉시 갱신
     const dateMatch=l.match(/(\d{4})년\s*(\d{1,2})월\s*(\d{1,2})일/);
     if(dateMatch){currentDate=toDateStr(dateMatch);continue;}
     if(stopWords.some(w=>l.includes(w)))continue;
-    const clean=l.replace(/[💰🎯📈📊💡📅✅🔄•]/g,'').trim();
+    const clean=l.replace(/[💰🎯📈📊💡📅✅🔄•━]/g,'').trim();
     const numName=l.match(/^(\d+)\.\s+(.+)/);
     if(numName){
       const nm=numName[2].replace(/\s*\[한경\]\s*/g,'').trim();
@@ -400,7 +378,7 @@ function parseText(text){
 async function run(){
   const text=document.getElementById('msgInput').value.trim();
   if(!text)return;
-  const{stocks,dateStr}=parseText(text);
+  const{stocks}=parseText(text);
   if(!stocks.length){
     document.getElementById('pr').innerHTML='<div style="color:var(--down-text);font-size:13px;margin-top:10px;padding:10px;background:var(--down-bg);border-radius:var(--radius-sm)">종목을 파싱하지 못했습니다.</div>';
     return;
@@ -414,32 +392,28 @@ async function run(){
     db.history.push({...s});
     const ex=db.watchlist[s.name];
     if(!ex){
-      db.watchlist[s.name]={...s,targetHistory:[{date:dateStr,target:s.target}],status:'new'};
-      newAlerts.push({type:'new',name:s.name,target:s.target,date:dateStr});
+      db.watchlist[s.name]={...s,targetHistory:[{date:s.date,target:s.target}],status:'new'};
+      newAlerts.push({type:'new',name:s.name,target:s.target,date:s.date});
       cNew++;
     } else {
-      ex.targetHistory=ex.targetHistory||[{date:ex.date||dateStr,target:ex.target}];
-      // 같은 날짜+같은 목표가 중복 방지
-      if(!ex.targetHistory.find(h=>h.date===dateStr&&h.target===s.target)){
-        ex.targetHistory.push({date:dateStr,target:s.target});
+      ex.targetHistory=ex.targetHistory||[{date:ex.date,target:ex.target}];
+      if(!ex.targetHistory.find(h=>h.date===s.date&&h.target===s.target)){
+        ex.targetHistory.push({date:s.date,target:s.target});
       }
-      // 날짜순 정렬
       ex.targetHistory.sort((a,b)=>a.date.localeCompare(b.date));
-      // 가장 최근 두 개를 비교해서 상태 결정
-      const sorted=ex.targetHistory;
-      const latest=sorted[sorted.length-1].target;
-      const prev2=sorted.length>=2?sorted[sorted.length-2].target:latest;
-      if(latest>prev2){ex.status='up';newAlerts.push({type:'up',name:s.name,prevTarget:prev2,newTarget:latest,diff:latest-prev2,date:dateStr});cUp++;}
-      else if(latest<prev2){ex.status='down';newAlerts.push({type:'down',name:s.name,prevTarget:prev2,newTarget:latest,diff:latest-prev2,date:dateStr});cDown++;}
+      const h=ex.targetHistory;
+      const latest=h[h.length-1].target;
+      const prev2=h.length>=2?h[h.length-2].target:latest;
+      if(latest>prev2){ex.status='up';newAlerts.push({type:'up',name:s.name,prevTarget:prev2,newTarget:latest,diff:latest-prev2,date:s.date});cUp++;}
+      else if(latest<prev2){ex.status='down';newAlerts.push({type:'down',name:s.name,prevTarget:prev2,newTarget:latest,diff:latest-prev2,date:s.date});cDown++;}
       else{ex.status='same';cSame++;}
-      // 최신 날짜 데이터로 업데이트
-      Object.assign(ex,{target:latest,prev:s.prev,gap:s.gap,opinion:s.opinion,reason:s.reason,date:dateStr});
+      Object.assign(ex,{target:latest,prev:s.prev,gap:s.gap,opinion:s.opinion,reason:s.reason,date:s.date});
     }
   });
   db.alerts=[...newAlerts,...db.alerts].slice(0,300);
   sv();upb();updateHeader();
   document.getElementById('pr').innerHTML=`
-    <div class="result-grid" style="margin-top:12px">
+    <div class="result-grid">
       <div class="result-card"><div class="result-num">${stocks.length}</div><div class="result-label">파싱</div></div>
       <div class="result-card"><div class="result-num" style="color:var(--new-text)">${cNew}</div><div class="result-label">신규</div></div>
       <div class="result-card"><div class="result-num" style="color:var(--up-text)">${cUp}</div><div class="result-label">상향</div></div>
@@ -470,8 +444,6 @@ function renderWatchStats(){
   const items=Object.values(db.watchlist);
   const ups=items.filter(s=>s.status==='up').length;
   const downs=items.filter(s=>s.status==='down').length;
-  const gaps=items.filter(s=>s.gap).map(s=>s.gap);
-  const avg=gaps.length?(gaps.reduce((a,b)=>a+b,0)/gaps.length).toFixed(1):'-';
   document.getElementById('watchStats').innerHTML=`
     <div class="stat-card"><div class="stat-num">${items.length}</div><div class="stat-label">전체</div></div>
     <div class="stat-card"><div class="stat-num" style="color:var(--up-text)">${ups}</div><div class="stat-label">목표가 상향</div></div>
@@ -488,26 +460,15 @@ function rw(){
   else if(wFilter==='same')items=items.filter(s=>s.status==='same');
   items.sort((a,b)=>(b.gap||0)-(a.gap||0));
   const el=document.getElementById('wb');
-  if(!items.length){
-    el.innerHTML='<div class="empty-state"><div class="empty-icon">📋</div><div class="empty-text">종목이 없습니다.<br>메시지를 입력해서 추가해보세요.</div></div>';
-    return;
-  }
+  if(!items.length){el.innerHTML='<div class="empty-state"><div class="empty-icon">📋</div><div class="empty-text">종목이 없습니다.<br>메시지를 입력해서 추가해보세요.</div></div>';return;}
   el.innerHTML=items.map(s=>{
-    const badge=s.status==='up'?'<span class="badge b-up">상향</span>':
-      s.status==='down'?'<span class="badge b-down">하락</span>':
-      s.status==='new'?'<span class="badge b-new">신규</span>':'';
-    const gColor=s.gap>=50?'var(--up-text)':s.gap>=30?'var(--text)':'var(--text3)';
+    const badge=s.status==='up'?'<span class="badge b-up">상향</span>':s.status==='down'?'<span class="badge b-down">하락</span>':s.status==='new'?'<span class="badge b-new">신규</span>':'';
+    const gColor=(s.gap||0)>=50?'var(--up-text)':(s.gap||0)>=30?'var(--text)':'var(--text3)';
     const hist=s.targetHistory||[];
-    const histCount=hist.length>1?`<span style="font-size:11px;color:var(--text3)"> · ${hist.length}회 추적</span>`:'';
-    return `<div class="stock-item" onclick="openDetail('${s.name}')">
-      <div class="stock-info">
-        <div class="stock-name">${s.name} ${badge}</div>
-        <div class="stock-meta">${s.prev?s.prev.toLocaleString()+'원':''} ${histCount}</div>
-      </div>
-      <div class="stock-right">
-        <div class="stock-target">${s.target?s.target.toLocaleString()+'원':'-'}</div>
-        <div class="stock-gap" style="color:${gColor}">${s.gap?s.gap.toFixed(1)+'%':''}</div>
-      </div>
+    const histTxt=hist.length>1?` · ${hist.length}회 추적`:'';
+    return `<div class="stock-item" onclick="openDetail('${s.name.replace(/'/g,"\\'")}')">
+      <div class="stock-info"><div class="stock-name">${s.name} ${badge}</div><div class="stock-meta">${s.prev?s.prev.toLocaleString()+'원':''}${histTxt}</div></div>
+      <div class="stock-right"><div class="stock-target">${s.target?s.target.toLocaleString()+'원':'-'}</div><div class="stock-gap" style="color:${gColor}">${s.gap?s.gap.toFixed(1)+'%':''}</div></div>
     </div>`;
   }).join('');
 }
@@ -516,28 +477,22 @@ function openDetail(name){
   const s=db.watchlist[name];
   if(!s)return;
   document.getElementById('modalTitle').textContent=s.name;
-  const hist=s.targetHistory||[];
-  const maxT=Math.max(...hist.map(h=>h.target));
-  const minT=Math.min(...hist.map(h=>h.target));
+  const hist=(s.targetHistory||[]).slice().sort((a,b)=>a.date.localeCompare(b.date));
+  const maxT=hist.length?Math.max(...hist.map(h=>h.target)):s.target;
+  const minT=hist.length?Math.min(...hist.map(h=>h.target)):s.target;
   const range=maxT-minT||1;
-  const bars=hist.map((h,i,a)=>{
+  const bars=hist.map(h=>{
     const pct=Math.round(((h.target-minT)/range)*80+10);
-    const isPeak=h.target===maxT;
-    return `<div class="chart-bar${isPeak?' peak':''}" style="height:${pct}%" title="${h.target.toLocaleString()}원"></div>`;
+    return `<div class="chart-bar${h.target===maxT?' peak':''}" style="height:${pct}%" title="${h.target.toLocaleString()}원"></div>`;
   }).join('');
   const histRows=hist.slice().reverse().map((h,i,a)=>{
     const prev=a[i+1];
     let diffHtml='';
-    if(prev){
-      const d=h.target-prev.target;
-      if(d>0)diffHtml=`<span class="history-diff trend-up">+${d.toLocaleString()}</span>`;
-      else if(d<0)diffHtml=`<span class="history-diff trend-down">${d.toLocaleString()}</span>`;
-    }
+    if(prev){const d=h.target-prev.target;if(d>0)diffHtml=`<span class="history-diff trend-up">+${d.toLocaleString()}</span>`;else if(d<0)diffHtml=`<span class="history-diff trend-down">${d.toLocaleString()}</span>`;}
     return `<div class="history-item"><span class="history-date">${h.date}</span><span class="history-target">${h.target.toLocaleString()}원</span>${diffHtml}</div>`;
   }).join('');
-  const badge=s.status==='up'?'<span class="badge b-up">목표가 상향</span>':
-    s.status==='down'?'<span class="badge b-down" style="font-size:12px">목표가 하락 — 제거 권장</span>':
-    s.status==='new'?'<span class="badge b-new">신규 종목</span>':'';
+  const badge=s.status==='up'?'<span class="badge b-up">목표가 상향</span>':s.status==='down'?'<span class="badge b-down">목표가 하락 — 제거 권장</span>':s.status==='new'?'<span class="badge b-new">신규</span>':'';
+  const safeName=name.replace(/'/g,"\\'");
   document.getElementById('modalBody').innerHTML=`
     <div class="modal-section">
       <div style="display:flex;gap:16px;align-items:center">
@@ -551,7 +506,7 @@ function openDetail(name){
     ${hist.length>0?`<div class="modal-section"><div class="modal-label">추적 이력 (${hist.length}회)</div><div class="history-list">${histRows}</div></div>`:''}
     ${s.reason?`<div class="modal-section"><div class="modal-label">최근 추천사유</div><div style="font-size:13px;color:var(--text2);line-height:1.6">${s.reason}</div></div>`:''}
     <div style="padding:16px;display:flex;gap:8px">
-      <button class="btn btn-danger" onclick="if(confirm('${s.name} 제거?')){rm('${s.name}');closeModal()}" style="flex:1;font-size:14px">관심종목 제거</button>
+      <button class="btn btn-danger" onclick="if(confirm('${safeName} 제거?')){rm('${safeName}');closeModal()}" style="flex:1;font-size:14px">관심종목 제거</button>
       <button class="btn btn-secondary" onclick="closeModal()" style="flex:1;font-size:14px">닫기</button>
     </div>`;
   document.getElementById('modalOverlay').classList.add('open');
@@ -563,6 +518,7 @@ function closeModal(e){
 }
 
 function rm(n){delete db.watchlist[n];sv();upb();rw();renderWatchStats();updateHeader();}
+
 function rmDown(){
   const ds=Object.values(db.watchlist).filter(s=>s.status==='down').map(s=>s.name);
   if(!ds.length){alert('하락 종목이 없습니다.');return;}
@@ -572,8 +528,8 @@ function rmDown(){
 function exportCSV(){
   const items=Object.values(db.watchlist);
   if(!items.length){alert('데이터가 없습니다.');return;}
-  const h=['종목명','투자의견','목표주가','전일종가','상승여력(%)','상태','추적횟수'];
-  const rows=items.map(s=>[s.name,s.opinion||'BUY',s.target||'',s.prev||'',s.gap||'',s.status,(s.targetHistory||[]).length]);
+  const h=['종목명','투자의견','목표주가','전일종가','상승여력(%)','섹터','상태','추적횟수'];
+  const rows=items.map(s=>[s.name,s.opinion||'BUY',s.target||'',s.prev||'',s.gap||'',s.sector||'',s.status,(s.targetHistory||[]).length]);
   const csv=[h,...rows].map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n');
   const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'});
   const url=URL.createObjectURL(blob);
@@ -582,26 +538,14 @@ function exportCSV(){
 
 function ral(){
   const el=document.getElementById('aa');
-  if(!db.alerts.length){el.innerHTML='<div class="empty-state"><div class="empty-icon">🔔</div><div class="empty-text">변동 알림이 없습니다.<br>메시지를 파싱하면 여기 표시됩니다.</div></div>';return;}
+  if(!db.alerts.length){el.innerHTML='<div class="empty-state"><div class="empty-icon">🔔</div><div class="empty-text">변동 알림이 없습니다.</div></div>';return;}
   const ups=db.alerts.filter(a=>a.type==='up');
   const downs=db.alerts.filter(a=>a.type==='down');
   const news=db.alerts.filter(a=>a.type==='new');
   let h='';
-  if(ups.length){
-    h+=`<div class="alert-section"><div class="alert-section-title">목표가 상향 ${ups.length}개</div>`;
-    h+=ups.map(a=>`<div class="alert-item a-up"><div class="alert-name">${a.name}</div><div class="alert-detail">${a.prevTarget.toLocaleString()}원 → ${a.newTarget.toLocaleString()}원 <strong>(+${a.diff.toLocaleString()}원)</strong></div><div class="alert-date">${a.date}</div></div>`).join('');
-    h+='</div>';
-  }
-  if(downs.length){
-    h+=`<div class="alert-section"><div class="alert-section-title">목표가 하락 ${downs.length}개</div>`;
-    h+=downs.map(a=>`<div class="alert-item a-down"><div class="alert-name">${a.name}</div><div class="alert-detail">${a.prevTarget.toLocaleString()}원 → ${a.newTarget.toLocaleString()}원 <strong>(${a.diff.toLocaleString()}원)</strong></div><div class="alert-date">${a.date}</div><button class="alert-rm-btn" onclick="if(confirm('${a.name} 제거?')){rm('${a.name}');ral()}">관심종목에서 제거</button></div>`).join('');
-    h+='</div>';
-  }
-  if(news.length){
-    h+=`<div class="alert-section"><div class="alert-section-title">신규 추가 ${news.length}개</div>`;
-    h+=news.map(a=>`<div class="alert-item a-new"><div class="alert-name">${a.name}</div><div class="alert-detail">목표가 ${a.target.toLocaleString()}원</div><div class="alert-date">${a.date}</div></div>`).join('');
-    h+='</div>';
-  }
+  if(ups.length){h+=`<div class="alert-section"><div class="alert-section-title">목표가 상향 ${ups.length}개</div>`;h+=ups.map(a=>`<div class="alert-item a-up"><div class="alert-name">${a.name}</div><div style="margin-top:2px">${a.prevTarget.toLocaleString()}원 → <strong>${a.newTarget.toLocaleString()}원</strong> (+${a.diff.toLocaleString()}원)</div><div style="font-size:11px;opacity:.6;margin-top:2px">${a.date}</div></div>`).join('');h+='</div>';}
+  if(downs.length){h+=`<div class="alert-section"><div class="alert-section-title">목표가 하락 ${downs.length}개</div>`;h+=downs.map(a=>{const sn=a.name.replace(/'/g,"\\'");return `<div class="alert-item a-down"><div class="alert-name">${a.name}</div><div style="margin-top:2px">${a.prevTarget.toLocaleString()}원 → <strong>${a.newTarget.toLocaleString()}원</strong> (${a.diff.toLocaleString()}원)</div><div style="font-size:11px;opacity:.6;margin-top:2px">${a.date}</div><button class="alert-rm-btn" onclick="if(confirm('${sn} 제거?')){rm('${sn}');ral()}">관심종목에서 제거</button></div>`;}).join('');h+='</div>';}
+  if(news.length){h+=`<div class="alert-section"><div class="alert-section-title">신규 추가 ${news.length}개</div>`;h+=news.map(a=>`<div class="alert-item a-new"><div class="alert-name">${a.name}</div><div style="margin-top:2px">목표가 ${a.target.toLocaleString()}원</div><div style="font-size:11px;opacity:.6;margin-top:2px">${a.date}</div></div>`).join('');h+='</div>';}
   el.innerHTML=h;
 }
 
@@ -613,26 +557,20 @@ function rh(){
   sel.innerHTML='<option value="all">전체</option>'+dates.map(d=>`<option value="${d}"${d===cv?' selected':''}>${d}</option>`).join('');
   let items=[...db.history].reverse();
   if(q)items=items.filter(s=>s.name.toLowerCase().includes(q));
-  if(cv!=='all'&&sel.value!=='all')items=items.filter(s=>s.date===sel.value);
+  if(sel.value!=='all')items=items.filter(s=>s.date===sel.value);
   const el=document.getElementById('hb');
   if(!items.length){el.innerHTML='<div class="empty-state"><div class="empty-icon">📁</div><div class="empty-text">히스토리가 없습니다.</div></div>';return;}
-  el.innerHTML=items.map(s=>`<div class="hist-item">
-    <div class="hist-left"><div class="hist-name">${s.name}</div><div class="hist-date">${s.date||''}</div></div>
-    <div class="hist-right"><div class="hist-target">${s.target?s.target.toLocaleString()+'원':'-'}</div><div class="hist-gap">${s.gap?s.gap.toFixed(1)+'%':''}</div></div>
-  </div>`).join('');
+  el.innerHTML=items.map(s=>`<div class="hist-item"><div><div class="hist-name">${s.name}</div><div class="hist-date">${s.date||''}</div></div><div><div class="hist-target">${s.target?s.target.toLocaleString()+'원':'-'}</div><div class="hist-gap">${s.gap?s.gap.toFixed(1)+'%':''}</div></div></div>`).join('');
 }
 
-// Service Worker 등록
-if('serviceWorker' in navigator){
-  navigator.serviceWorker.register('sw.js').catch(()=>{});
-}
+if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').catch(()=>{});}
 
+// 초기화
 db=lsGet();
 // 기존 데이터 날짜순 정렬 마이그레이션
 Object.values(db.watchlist).forEach(s=>{
   if(s.targetHistory&&s.targetHistory.length>1){
     s.targetHistory.sort((a,b)=>a.date.localeCompare(b.date));
-    // 상태도 재계산
     const h=s.targetHistory;
     const latest=h[h.length-1].target;
     const prev=h[h.length-2].target;
@@ -642,8 +580,7 @@ Object.values(db.watchlist).forEach(s=>{
     s.target=latest;
   }
 });
-sv();
-upb();updateHeader();
+sv();upb();updateHeader();
 </script>
 </body>
 </html>
