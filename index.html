@@ -315,7 +315,7 @@ function stockItemHTML(s){
   '</div>';
 }
 
-/* 관심종목 탭: 제거 버튼 포함 */
+/* 관심종목 탭: 삭제 버튼 포함 */
 function watchItemHTML(s){
   const bg=makeBadges(s);
   const gc=(s.gap||0)>=50?'var(--up-text)':(s.gap||0)>=30?'var(--text)':'var(--text3)';
@@ -325,7 +325,7 @@ function watchItemHTML(s){
       '<div class="stock-name">'+s.name+' '+bg+'</div>'+
       '<div class="stock-meta">'+(s.prev?s.prev.toLocaleString()+'원':'')+' · '+(s.date||'')+'</div>'+
     '</div>'+
-    '<button class="rm-btn" onclick="removeBookmark(\''+sn+'\')">제거</button>'+
+    '<button class="rm-btn" onclick="removeBookmark(\''+sn+'\')">삭제</button>'+
     '<div class="stock-right" onclick="openDetail(\''+sn+'\')">'+
       '<div class="stock-target">'+(s.target?s.target.toLocaleString()+'원':'-')+'</div>'+
       '<div class="stock-gap" style="color:'+gc+'">'+(s.gap?s.gap.toFixed(1)+'%':'')+'</div>'+
