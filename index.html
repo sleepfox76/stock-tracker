@@ -566,8 +566,13 @@ function rmStock(n){
   sv();upb();updateHeader();rs();rw();
 }
 
-/* ── Service Worker ── */
-if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').catch(()=>{});}
+/* ── Service Worker: 기존 캐시 제거 후 재등록 ── */
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.getRegistrations().then(regs=>{
+    regs.forEach(r=>r.unregister());
+  });
+  navigator.serviceWorker.register('sw.js').catch(()=>{});
+}
 
 /* ── Init ── */
 db=lsGet();
