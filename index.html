@@ -137,7 +137,7 @@ textarea:focus{border-color:var(--accent);}
 <!-- ── 입력 탭 ── -->
 <div class="tab-content active" id="tab-input">
   <div class="input-area">
-    <textarea id="msgInput" placeholder="텔레그램 메시지를 그대로 붙여넣으세요.&#10;&#10;날짜가 여러 개 있어도 날짜별로 자동 분류됩니다."></textarea>
+    <textarea id="msgInput" placeholder="메시지를 넣으세요.&#10;&#10;날짜별로 자동 분류됩니다."></textarea>
     <button class="btn-primary" onclick="run()">파싱 + 저장</button>
   </div>
 </div>
@@ -536,7 +536,7 @@ function openDetail(name){
     (s.reason?'<div class="modal-section"><div class="modal-label">최근 추천사유</div><div style="font-size:13px;color:var(--text2);line-height:1.6">'+s.reason+'</div></div>':'')+
     '<div class="modal-actions">'+
       (isBookmarked
-        ? '<button class="btn-bm-remove" onclick="modalToggleBM(\''+sn+'\')">★ 관심종목 제거</button>'
+        ? '<button class="btn-bm-remove" onclick="modalToggleBM(\''+sn+'\')">★ 관심종목 삭제</button>'
         : '<button class="btn-bm-add" onclick="modalToggleBM(\''+sn+'\')">☆ 관심종목 추가</button>'
       )+
       '<button class="btn-del" onclick="if(confirm(\''+sn+' 를 삭제할까요?\')){rmStock(\''+sn+'\');closeModal()}">삭제</button>'+
@@ -545,7 +545,7 @@ function openDetail(name){
   document.getElementById('modalOverlay').classList.add('open');
 }
 
-/* 모달에서 관심종목 추가/제거 토글 */
+/* 모달에서 관심종목 추가/삭제 토글 */
 function modalToggleBM(name){
   if(db.bookmarks[name])delete db.bookmarks[name];
   else db.bookmarks[name]=true;
