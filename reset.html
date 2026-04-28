@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stock Tracker - 캐시 리셋</title>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;padding:40px 20px;background:#f5f5f5;color:#333;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+    .card{background:#fff;border-radius:12px;padding:32px 24px;box-shadow:0 4px 16px rgba(0,0,0,0.08);max-width:480px;width:100%;text-align:center;}
+    h1{color:#0F1E46;font-size:24px;margin-bottom:8px;}
+    h2{color:#444;font-size:18px;margin:16px 0;font-weight:500;}
+    .accent{color:#E87722;}
+    .spinner{margin:24px auto;width:48px;height:48px;border:4px solid #eee;border-top-color:#E87722;border-radius:50%;animation:spin 0.8s linear infinite;}
+    @keyframes spin{to{transform:rotate(360deg);}}
+    .ok{color:#2e7d32;}
+    .err{color:#c62828;}
+    .status{color:#666;margin:16px 0;font-size:14px;line-height:1.6;}
+    a.btn{display:inline-block;background:#0F1E46;color:#fff;text-decoration:none;padding:12px 28px;border-radius:8px;font-weight:600;margin-top:12px;}
+    pre{text-align:left;background:#f9f9f9;padding:12px;border-radius:8px;overflow:auto;font-size:12px;margin-top:12px;}
+    .preserve{background:#e8f5e9;color:#2e7d32;padding:10px 14px;border-radius:8px;font-size:13px;margin-top:16px;}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>📈 STOCK <span class="accent">TRACKER</span></h1>
+    <h2 id="title">캐시 리셋 중...</h2>
+    <div class="spinner" id="spinner"></div>
+    <div class="status" id="status">잠깐만 기다려주세요...</div>
+    <div class="preserve">💾 종목 데이터(localStorage)는 그대로 보존됩니다</div>
+  </div>
+  <script>
+  async function reset(){
+    const $ = id => document.getElementById(id);
+    const setStatus = msg => { $('status').textContent = msg; };
+    try{
+      setStatus('Service Worker 등록 정보 확인 중...');
+      let swCount = 0;
+      if('serviceWorker' in navigator){
+        const regs = await navigator.serviceWorker.getRegistrations();
+        swCount = regs.length;
+        setStatus('Service Worker ' + swCount + '개 발견 → 해제 중...');
+        for(const r of regs){ await r.unregister(); }
+      }
+      let cacheCount = 0;
+      if('caches' in window){
+        const keys = await caches.keys();
+        cacheCount = keys.length;
+        setStatus('캐시 ' + cacheCount + '개 발견 → 삭제 중...');
+        for(const k of keys){ await caches.delete(k); }
+      }
+      $('spinner').style.display = 'none';
+      $('title').innerHTML = '<span class="ok">✅ 리셋 완료!</span>';
+      $('status').innerHTML = 'Service Worker ' + swCount + '개 해제 · 캐시 ' + cacheCount + '개 삭제<br><br>3초 후 자동 이동...';
+      const card = document.querySelector('.card');
+      const btn = document.createElement('a');
+      btn.href = './?fresh=' + Date.now();
+      btn.className = 'btn';
+      btn.textContent = '지금 바로 이동';
+      card.appendChild(btn);
+      setTimeout(()=>{ location.href = './?fresh=' + Date.now(); }, 3000);
+    }catch(e){
+      $('spinner').style.display = 'none';
+      $('title').innerHTML = '<span class="err">❌ 오류 발생</span>';
+      $('status').innerHTML = '<pre>' + (e.message || e) + '</pre>';
+    }
+  }
+  reset();
+  </script>
+</body>
+</html>
