@@ -125,26 +125,47 @@ async function doCopy(){
   msg.style.display = 'block';
 }
 
+function extractJson(text){
+  /* 텍스트에서 JSON 부분만 똑똑하게 추출 — HTML 태그, 카톡 메타데이터, 공백 등 제거 */
+  let t = text.trim();
+  /* HTML 태그 제거 (카톡/메모장이 추가한 <html><body> 등) */
+  t = t.replace(/<[^>]+>/g, '');
+  /* HTML 엔티티 디코딩 */
+  t = t.replace(/&quot;/g, '"').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&nbsp;/g, ' ');
+  /* 앞뒤 공백 제거 */
+  t = t.trim();
+  /* 첫 { 부터 마지막 } 까지만 추출 */
+  const start = t.indexOf('{');
+  const end = t.lastIndexOf('}');
+  if(start >= 0 && end > start){
+    t = t.substring(start, end + 1);
+  }
+  return t;
+}
+
 function doRestore(){
   const area = document.getElementById('restoreArea');
   const msg = document.getElementById('restoreMsg');
-  const text = area.value.trim();
-  if(!text){ alert('복원할 데이터를 붙여넣어주세요!'); return; }
+  const rawText = area.value.trim();
+  if(!rawText){ alert('복원할 데이터를 붙여넣어주세요!'); return; }
+  /* 똑똑한 추출: HTML/카톡 등 형식 자동 정리 */
+  const text = extractJson(rawText);
   try{
     const parsed = JSON.parse(text);
     if(!parsed.watchlist){
       if(!confirm('데이터 형식이 예상과 달라요. 그래도 복원할까요?')) return;
     }
     localStorage.setItem(KEY, text);
+    const wlCount = parsed.watchlist ? Object.keys(parsed.watchlist).length : 0;
     msg.style.background = '#e8f5e9';
     msg.style.color = '#2e7d32';
-    msg.innerHTML = '✅ 복원 완료! 3초 후 트래커로 이동합니다...<br><a href="./?restored=1" style="color:#2e7d32;font-weight:700;">지금 바로 이동</a>';
+    msg.innerHTML = '✅ 복원 완료! 종목 <b>'+wlCount+'</b>개 복원됨.<br>3초 후 트래커로 이동합니다...<br><a href="./?restored=1" style="color:#2e7d32;font-weight:700;">지금 바로 이동</a>';
     msg.style.display = 'block';
     setTimeout(()=>{ location.href = './?restored='+Date.now(); }, 3000);
   }catch(e){
     msg.style.background = '#ffebee';
     msg.style.color = '#c62828';
-    msg.textContent = '❌ 데이터 형식이 올바르지 않아요: '+e.message;
+    msg.innerHTML = '❌ 데이터 형식이 올바르지 않아요: '+e.message+'<br><small>처음 80글자: '+text.substring(0,80).replace(/</g,'&lt;')+'</small>';
     msg.style.display = 'block';
   }
 }
