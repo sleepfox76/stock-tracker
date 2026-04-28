@@ -68,6 +68,7 @@ textarea:focus{border-color:var(--accent);}
 .b-new{background:var(--new-bg);color:var(--new-text);}
 .b-reapp{background:var(--reapp-bg);color:var(--reapp-text);}
 .b-count{background:var(--count-bg);color:var(--count-text);}
+.b-same{background:#eceff1;color:#546e7a;}
 .empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 20px;gap:12px;}
 .empty-icon{font-size:40px;}
 .empty-text{font-size:14px;color:var(--text3);text-align:center;line-height:1.6;}
@@ -149,6 +150,9 @@ textarea:focus{border-color:var(--accent);}
 <div class="copy-toast" id="copyToast"></div>
 <script>
 const SK='stk_pwa_v1';
+/* 상향/하향 분류 임계값. 직전 등장 대비 변동률이 이 값 미만이면 'same'(유지)으로 분류.
+   봇 데이터와 비교 후 조정 예정. 0.05 = ±5% */
+const STATUS_THRESHOLD=0.05;
 let db={watchlist:{},history:[],alerts:[],bookmarks:{},dailySentiment:{}};
 let sFilter='all';
 let secSentiment='positive';
@@ -391,6 +395,7 @@ function makeBadges(s){
   if(cnt>=2)b+='<span class="badge b-count">'+cnt+'회</span>';
   if(s.status==='up')b+='<span class="badge b-up">상향</span>';
   if(s.status==='down')b+='<span class="badge b-down">하향</span>';
+  if(s.status==='same')b+='<span class="badge b-same">유지</span>';
   return b;
 }
 
@@ -589,7 +594,8 @@ async function run(){
       if(!ex.targetHistory.find(h=>h.date===s.date&&h.target===s.target))ex.targetHistory.push({date:s.date,target:s.target});
       ex.targetHistory.sort((a,b)=>(a.date||'').localeCompare(b.date||''));
       const h=ex.targetHistory;const latest=h[h.length-1].target;const prev2=h.length>=2?h[h.length-2].target:latest;
-      if(latest>prev2)ex.status='up';else if(latest<prev2)ex.status='down';else ex.status='same';
+      const chg=prev2?(latest-prev2)/prev2:0;
+      if(chg>=STATUS_THRESHOLD)ex.status='up';else if(chg<=-STATUS_THRESHOLD)ex.status='down';else ex.status='same';
       Object.assign(ex,{target:latest,prev:s.prev,gap:s.gap,opinion:s.opinion,reason:s.reason,date:s.date,sentiment:s.sentiment||'neutral'});
     }
   });
@@ -683,7 +689,8 @@ Object.values(db.watchlist).forEach(s=>{
   if(s.targetHistory&&s.targetHistory.length>1){
     s.targetHistory.sort((a,b)=>a.date.localeCompare(b.date));
     const h=s.targetHistory;const latest=h[h.length-1].target;const prev=h[h.length-2].target;
-    if(latest>prev)s.status='up';else if(latest<prev)s.status='down';else s.status='same';
+    const chg=prev?(latest-prev)/prev:0;
+    if(chg>=STATUS_THRESHOLD)s.status='up';else if(chg<=-STATUS_THRESHOLD)s.status='down';else s.status='same';
     s.target=latest;
   }
 });
