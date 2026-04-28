@@ -171,7 +171,11 @@ function migrateNormNames(d){
     const fixed={};
     Object.entries(d.watchlist).forEach(([k,v])=>{
       const nk=normName(k);if(!nk)return;
-      const nv=(v&&typeof v==='object')?{...v,name:normName(v.name||k)}:v;
+      let nv=(v&&typeof v==='object')?{...v,name:normName(v.name||k)}:v;
+      /* targetHistory에서 target 없는 잘못된 항목 정리 */
+      if(nv&&Array.isArray(nv.targetHistory)){
+        nv.targetHistory=nv.targetHistory.filter(h=>h&&typeof h.target==='number'&&!isNaN(h.target));
+      }
       if(fixed[nk]){
         /* 중복 → target/targetHistory가 있는 더 풍부한 데이터를 우선 */
         const cur=fixed[nk];const incoming=nv;
@@ -578,9 +582,12 @@ async function run(){
     const ex=db.watchlist[s.name];
     if(!ex){db.watchlist[s.name]={...s,targetHistory:[{date:s.date,target:s.target}],status:'new'};}
     else{
-      ex.targetHistory=ex.targetHistory||[{date:ex.date,target:ex.target}];
+      /* 초기 targetHistory: ex.target이 있을 때만 추가, 없으면 빈 배열 */
+      ex.targetHistory=ex.targetHistory||(typeof ex.target==='number'?[{date:ex.date,target:ex.target}]:[]);
+      /* 잘못된 항목(target 없음) 정리 */
+      ex.targetHistory=ex.targetHistory.filter(h=>h&&typeof h.target==='number'&&!isNaN(h.target));
       if(!ex.targetHistory.find(h=>h.date===s.date&&h.target===s.target))ex.targetHistory.push({date:s.date,target:s.target});
-      ex.targetHistory.sort((a,b)=>a.date.localeCompare(b.date));
+      ex.targetHistory.sort((a,b)=>(a.date||'').localeCompare(b.date||''));
       const h=ex.targetHistory;const latest=h[h.length-1].target;const prev2=h.length>=2?h[h.length-2].target:latest;
       if(latest>prev2)ex.status='up';else if(latest<prev2)ex.status='down';else ex.status='same';
       Object.assign(ex,{target:latest,prev:s.prev,gap:s.gap,opinion:s.opinion,reason:s.reason,date:s.date,sentiment:s.sentiment||'neutral'});
@@ -623,12 +630,13 @@ function openDetail(name){
   }
   const cnt=getCount(name);
   document.getElementById('modalTitle').textContent=s.name;
-  const hist=(s.targetHistory||[]).slice().sort((a,b)=>a.date.localeCompare(b.date));
-  const maxT=hist.length?Math.max(...hist.map(h=>h.target)):s.target;
-  const minT=hist.length?Math.min(...hist.map(h=>h.target)):s.target;
-  const range=maxT-minT||1;
+  /* targetHistory에서 target이 없는 항목은 차트/이력에 못 쓰니 제외 */
+  const hist=(s.targetHistory||[]).filter(h=>h&&typeof h.target==='number'&&!isNaN(h.target)).slice().sort((a,b)=>(a.date||'').localeCompare(b.date||''));
+  const maxT=hist.length?Math.max(...hist.map(h=>h.target)):(s.target||0);
+  const minT=hist.length?Math.min(...hist.map(h=>h.target)):(s.target||0);
+  const range=(maxT-minT)||1;
   const bars=hist.map(h=>{const pct=Math.round(((h.target-minT)/range)*80+10);return '<div class="chart-bar'+(h.target===maxT?' peak':'')+'" style="height:'+pct+'%"></div>';}).join('');
-  const histRows=hist.slice().reverse().map((h,i,a)=>{const prev=a[i+1];let dh='';if(prev){const d=h.target-prev.target;if(d>0)dh='<span class="history-diff trend-up">+'+d.toLocaleString()+'</span>';else if(d<0)dh='<span class="history-diff trend-down">'+d.toLocaleString()+'</span>';}return '<div class="history-item"><span class="history-date">'+h.date+'</span><span class="history-target">'+h.target.toLocaleString()+'원</span>'+dh+'</div>';}).join('');
+  const histRows=hist.slice().reverse().map((h,i,a)=>{const prev=a[i+1];let dh='';if(prev&&typeof prev.target==='number'){const d=h.target-prev.target;if(d>0)dh='<span class="history-diff trend-up">+'+d.toLocaleString()+'</span>';else if(d<0)dh='<span class="history-diff trend-down">'+d.toLocaleString()+'</span>';}return '<div class="history-item"><span class="history-date">'+(h.date||'')+'</span><span class="history-target">'+h.target.toLocaleString()+'원</span>'+dh+'</div>';}).join('');
   const bg=makeBadges(s);const sn=name.replace(/'/g,"\\'");
   const isBookmarked=!!(db.bookmarks&&db.bookmarks[name]);
   document.getElementById('modalBody').innerHTML=
