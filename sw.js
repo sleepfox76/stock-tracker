@@ -1,4 +1,4 @@
-const CACHE = 'stock-tracker-v10';
+const CACHE = 'stock-tracker-v11';
 const ASSETS = [
     '/stock-tracker/',
     '/stock-tracker/index.html',
