@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Stock Tracker - 데이터 도구</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;padding:16px;background:#f5f5f5;color:#333;}
+.card{background:#fff;border-radius:12px;padding:20px;box-shadow:0 2px 8px rgba(0,0,0,0.06);max-width:480px;margin:0 auto 12px;}
+h1{color:#0F1E46;font-size:22px;margin-bottom:4px;}
+h2{color:#444;font-size:16px;margin:8px 0;}
+.accent{color:#E87722;}
+.step{background:#0F1E46;color:#fff;width:24px;height:24px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;margin-right:8px;}
+button{background:#0F1E46;color:#fff;border:none;padding:14px 20px;border-radius:8px;font-weight:600;font-size:15px;width:100%;margin:8px 0;cursor:pointer;}
+button.danger{background:#c62828;}
+button.success{background:#2e7d32;}
+button:active{opacity:0.8;}
+textarea{width:100%;min-height:120px;padding:10px;border:1px solid #ddd;border-radius:8px;font-family:monospace;font-size:11px;resize:vertical;}
+.info{background:#e3f2fd;color:#1565c0;padding:10px 12px;border-radius:8px;font-size:13px;margin:8px 0;line-height:1.5;}
+.warn{background:#fff3e0;color:#e65100;padding:10px 12px;border-radius:8px;font-size:13px;margin:8px 0;line-height:1.5;}
+.success-msg{background:#e8f5e9;color:#2e7d32;padding:10px 12px;border-radius:8px;font-size:13px;margin:8px 0;display:none;line-height:1.5;}
+.stats{font-size:14px;color:#444;background:#f9f9f9;padding:12px;border-radius:8px;margin:8px 0;}
+ol li{margin:6px 0 6px 24px;line-height:1.6;}
+a.btn-link{display:inline-block;color:#0F1E46;font-weight:600;font-size:16px;text-decoration:none;padding:10px 20px;border:2px solid #0F1E46;border-radius:8px;}
+.divider{height:1px;background:#eee;margin:16px 0;}
+</style>
+</head>
+<body>
+
+<div class="card">
+  <h1>📈 STOCK <span class="accent">TRACKER</span></h1>
+  <h2>💾 데이터 백업 / 복원 도구</h2>
+  <div class="info">캐시 문제 해결을 위한 임시 도구입니다.<br>데이터를 안전하게 백업하고 복원할 수 있어요.</div>
+</div>
+
+<div class="card">
+  <h2><span class="step">1</span>현재 데이터 백업</h2>
+  <div class="stats" id="stats">데이터 확인 중...</div>
+  <button onclick="doCopy()">📋 클립보드에 복사</button>
+  <textarea id="backupArea" readonly></textarea>
+  <div class="success-msg" id="copyMsg">✅ 복사 완료!</div>
+  <div class="warn">⚠️ <b>이 텍스트를 꼭 안전한 곳에 저장하세요!</b><br>예: 카톡 본인에게 보내기, 메모장 앱, 이메일 등</div>
+</div>
+
+<div class="card">
+  <h2><span class="step">2</span>크롬 사이트 데이터 청소</h2>
+  <div class="info">아래 순서로 sleepfox76.github.io의 데이터를 완전히 청소해요. 종목 데이터도 같이 사라지지만 1단계 백업이 있으니 걱정 마세요.</div>
+  <ol>
+    <li>크롬 우측 상단 메뉴(점 3개) → <b>설정</b></li>
+    <li><b>개인정보 보호 및 보안</b> → <b>사이트 설정</b></li>
+    <li>아래로 스크롤 → <b>저장된 데이터</b> 또는 <b>모든 사이트</b></li>
+    <li>검색창에 <b>sleepfox76</b> 입력</li>
+    <li><b>sleepfox76.github.io</b> 탭 → <b>지우기 및 재설정</b> 또는 <b>삭제</b> 누르기</li>
+  </ol>
+  <div class="warn">⚠️ 1단계 백업 안 했으면 절대 진행하지 마세요!</div>
+</div>
+
+<div class="card">
+  <h2><span class="step">3</span>이 페이지 다시 방문</h2>
+  <div class="info">사이트 데이터 청소 후, 이 페이지를 새로고침 또는 다시 방문하세요:<br><code style="background:#f0f0f0;padding:4px 8px;border-radius:4px;font-size:12px;display:inline-block;margin-top:6px;">https://sleepfox76.github.io/stock-tracker/data-tools.html</code></div>
+  <div class="info">이때 새 코드(v8)가 로드돼요!</div>
+</div>
+
+<div class="card">
+  <h2><span class="step">4</span>데이터 복원</h2>
+  <div class="info">아래 칸에 1단계에서 백업한 텍스트를 붙여넣고 복원 버튼을 누르세요.</div>
+  <textarea id="restoreArea" placeholder="여기에 백업 텍스트를 붙여넣어주세요..."></textarea>
+  <button class="success" onclick="doRestore()">💾 복원하기</button>
+  <div class="success-msg" id="restoreMsg"></div>
+</div>
+
+<div class="card" style="text-align:center;">
+  <a class="btn-link" href="./?fresh=once">→ 트래커 메인으로 이동</a>
+</div>
+
+<script>
+const KEY = 'stk_pwa_v1';
+
+function loadInitial(){
+  const raw = localStorage.getItem(KEY);
+  const stats = document.getElementById('stats');
+  const area = document.getElementById('backupArea');
+  if(!raw){
+    stats.innerHTML = '⚠️ 이 브라우저에는 트래커 데이터가 없어요.<br>(이미 청소했거나, 사용한 적 없는 브라우저일 수 있어요)';
+    area.value = '';
+    area.placeholder = '저장된 데이터가 없습니다';
+    return;
+  }
+  try{
+    const d = JSON.parse(raw);
+    const wlCount = d.watchlist ? Object.keys(d.watchlist).length : 0;
+    const histCount = d.history ? d.history.length : 0;
+    const bmCount = d.bookmarks ? Object.keys(d.bookmarks).filter(k=>d.bookmarks[k]).length : 0;
+    const dsCount = d.dailySentiment ? Object.keys(d.dailySentiment).length : 0;
+    stats.innerHTML = '📊 종목 <b>'+wlCount+'</b>개 · 이력 <b>'+histCount+'</b>건 · 관심종목 <b>'+bmCount+'</b>개 · 브리핑 <b>'+dsCount+'</b>일치';
+  }catch(e){
+    stats.innerHTML = '⚠️ 데이터 형식 오류: '+e.message;
+  }
+  area.value = raw;
+}
+
+async function doCopy(){
+  const area = document.getElementById('backupArea');
+  if(!area.value){ alert('백업할 데이터가 없어요!'); return; }
+  area.select();
+  area.setSelectionRange(0, 999999);
+  let ok = false;
+  try{
+    await navigator.clipboard.writeText(area.value);
+    ok = true;
+  }catch(e){
+    try{ ok = document.execCommand('copy'); }catch(_){}
+  }
+  const msg = document.getElementById('copyMsg');
+  if(ok){
+    msg.textContent = '✅ 복사 완료! 메모장 / 카톡 본인 / 이메일에 붙여넣어 보관하세요.';
+    msg.style.background = '#e8f5e9';
+    msg.style.color = '#2e7d32';
+  }else{
+    msg.textContent = '⚠️ 자동 복사 실패. 위 텍스트박스에서 길게 눌러서 직접 복사해주세요.';
+    msg.style.background = '#fff3e0';
+    msg.style.color = '#e65100';
+  }
+  msg.style.display = 'block';
+}
+
+function doRestore(){
+  const area = document.getElementById('restoreArea');
+  const msg = document.getElementById('restoreMsg');
+  const text = area.value.trim();
+  if(!text){ alert('복원할 데이터를 붙여넣어주세요!'); return; }
+  try{
+    const parsed = JSON.parse(text);
+    if(!parsed.watchlist){
+      if(!confirm('데이터 형식이 예상과 달라요. 그래도 복원할까요?')) return;
+    }
+    localStorage.setItem(KEY, text);
+    msg.style.background = '#e8f5e9';
+    msg.style.color = '#2e7d32';
+    msg.innerHTML = '✅ 복원 완료! 3초 후 트래커로 이동합니다...<br><a href="./?restored=1" style="color:#2e7d32;font-weight:700;">지금 바로 이동</a>';
+    msg.style.display = 'block';
+    setTimeout(()=>{ location.href = './?restored='+Date.now(); }, 3000);
+  }catch(e){
+    msg.style.background = '#ffebee';
+    msg.style.color = '#c62828';
+    msg.textContent = '❌ 데이터 형식이 올바르지 않아요: '+e.message;
+    msg.style.display = 'block';
+  }
+}
+
+loadInitial();
+</script>
+</body>
+</html>
