@@ -160,6 +160,16 @@ let secSentiment='positive';
 let activeSector='';
 let toastTimer=null;
 
+/* 오늘 날짜(한국 로컬 시간 기준) — toISOString()은 UTC라 한국 새벽~오전 9시 사이에
+   날짜가 어긋나서 '신규' 배지가 늦게 적용되는 버그가 있었음. 로컬 시간으로 통일. */
+function todayStr(){
+  const d=new Date();
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+function dateStr(d){
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+
 /* 종목명 정규화: zero-width 문자, NBSP, 양끝 공백 제거 */
 function normName(s){
   if(s==null)return'';
@@ -236,7 +246,7 @@ function setSF(f){sFilter=f;renderFilterBtns();rs();}
 
 function renderFilterBtns(){
   const all=Object.values(db.watchlist);
-  const today=new Date().toISOString().slice(0,10);
+  const today=todayStr();
   const counts={all:all.length,up:all.filter(s=>s.status==='up').length,down:all.filter(s=>s.status==='down').length,new:all.filter(s=>s.date===today).length};
   const defs=[{f:'all',label:'전체'},{f:'up',label:'상향'},{f:'down',label:'하향'},{f:'new',label:'신규'}];
   document.getElementById('sfRow').innerHTML=defs.map(b=>'<button class="filter-btn'+(sFilter===b.f?' on':'')+'" onclick="setSF(\''+b.f+'\')">'+b.label+'('+counts[b.f]+')</button>').join('');
@@ -249,31 +259,61 @@ function getCount(name){
 
 /* 당일 등장 횟수 — targetHistory 중 오늘 날짜 항목 개수 */
 function getTodayCount(name){
-  const today=new Date().toISOString().slice(0,10);
+  const today=todayStr();
   const s=db.watchlist[name];
   if(!s||!s.targetHistory)return 0;
   return s.targetHistory.filter(h=>h.date===today).length;
 }
 
-/* 직전 등장 대비 목표가 변동률 (소수, 예: +0.07 = +7%) */
+/* targetHistory를 날짜별로 묶어 평균 목표가 반환 — 같은 날 여러 번 추천되면 평균으로 계산
+   결과: [{date, avg, count}, ...] 날짜 오름차순 */
+function dailyAvgs(targetHistory){
+  if(!targetHistory||!targetHistory.length)return [];
+  const byDate={};
+  targetHistory.forEach(h=>{
+    if(!h||typeof h.target!=='number'||isNaN(h.target)||!h.date)return;
+    if(!byDate[h.date])byDate[h.date]={sum:0,count:0};
+    byDate[h.date].sum+=h.target;
+    byDate[h.date].count++;
+  });
+  return Object.entries(byDate)
+    .map(([date,v])=>({date,avg:v.sum/v.count,count:v.count}))
+    .sort((a,b)=>a.date.localeCompare(b.date));
+}
+
+/* 상향/하향 판정 — 같은 날 여러번 등장 시 평균가, 이전 날짜의 평균과 비교
+   비교할 이전 날짜가 없으면 'new' (신규 = 상향/하향 판정 불가) */
+function computeStatus(targetHistory){
+  const days=dailyAvgs(targetHistory);
+  if(days.length<2)return 'new';
+  const latest=days[days.length-1].avg;
+  const prev=days[days.length-2].avg;
+  const chg=prev?(latest-prev)/prev:0;
+  if(chg>=STATUS_THRESHOLD)return 'up';
+  if(chg<=-STATUS_THRESHOLD)return 'down';
+  return 'same';
+}
+
+/* 직전 '날짜' 대비 목표가 평균 변동률 (소수, 예: +0.07 = +7%)
+   같은 날 다회 추천은 평균가로 묶어 계산. 비교 대상 날짜 없으면 0. */
 function getChgPct(s){
-  const h=s&&s.targetHistory;
-  if(!h||h.length<2)return 0;
-  const latest=h[h.length-1].target;
-  const prev2=h[h.length-2].target;
-  return prev2?(latest-prev2)/prev2:0;
+  const days=dailyAvgs(s&&s.targetHistory);
+  if(days.length<2)return 0;
+  const latest=days[days.length-1].avg;
+  const prev=days[days.length-2].avg;
+  return prev?(latest-prev)/prev:0;
 }
 
 /* 핫 스코어 — 정렬용 (재등장: 100 + 당일횟수, 그 외: 당일횟수) */
 function getHotScore(s){
-  const today=new Date().toISOString().slice(0,10);
+  const today=todayStr();
   const todayCnt=getTodayCount(s.name);
   const reapp=isReappeared(s.name,s.date)?100:0;
   return reapp+todayCnt;
 }
 
 function isReappeared(name,currentDate){
-  const today=new Date().toISOString().slice(0,10);
+  const today=todayStr();
   if(currentDate!==today)return false;
   return db.history.some(h=>h.name===name&&h.date<today);
 }
@@ -414,8 +454,8 @@ async function classifySectors(){
 const SE={'반도체':'🔵','IT/플랫폼':'💻','바이오/제약':'💊','조선/방산':'⚓','자동차':'🚗','에너지/전력':'⚡','금융/증권':'🏦','소비재/유통':'🛍','엔터/미디어':'🎵','화학/소재':'🧪','건설/부동산':'🏗','통신':'📡','기타':'📌'};
 
 function makeBadges(s){
-  let b='';const cnt=getCount(s.name);const d=s.date||new Date().toISOString().slice(0,10);
-  const today=new Date().toISOString().slice(0,10);
+  let b='';const cnt=getCount(s.name);const d=s.date||todayStr();
+  const today=todayStr();
   const todayCnt=getTodayCount(s.name);
   /* 신호 우선순위: 재등장🔥 > 🔥당일N회 > 신규 (셋 중 하나만) */
   if(isReappeared(s.name,d))b+='<span class="badge b-reapp">재등장🔥</span>';
@@ -446,7 +486,7 @@ function rs(){
   const q=(document.getElementById('ss').value||'').toLowerCase();
   let items=Object.values(db.watchlist);
   if(q)items=items.filter(s=>s.name.toLowerCase().includes(q));
-  const todayStr=new Date().toISOString().slice(0,10);
+  const tdy=todayStr();
   /* 탭별 필터 + 정렬 차별화 */
   if(sFilter==='up'){
     items=items.filter(s=>s.status==='up');
@@ -457,7 +497,7 @@ function rs(){
     /* 하향: 변동률 작은 순(많이 내린 순) → 등장횟수 */
     items.sort((a,b)=>getChgPct(a)-getChgPct(b)||getCount(b.name)-getCount(a.name));
   }else if(sFilter==='new'){
-    items=items.filter(s=>s.date===todayStr);
+    items=items.filter(s=>s.date===tdy);
     /* 신규: 당일 등장횟수 → 상승여력 */
     items.sort((a,b)=>getTodayCount(b.name)-getTodayCount(a.name)||(b.gap||0)-(a.gap||0));
   }else{
@@ -473,7 +513,7 @@ function rs(){
 function getTodayBriefing(){
   /* dailySentiment에서 가장 최근 날짜의 브리핑 사용 */
   const allDates=Object.keys(db.dailySentiment||{}).sort();
-  const latestDate=allDates.length?allDates[allDates.length-1]:new Date().toISOString().slice(0,10);
+  const latestDate=allDates.length?allDates[allDates.length-1]:todayStr();
   const sentimentMap=(db.dailySentiment&&db.dailySentiment[latestDate])||{};
   /* 종목 객체 생성: watchlist 데이터 우선, 없으면 최소 구조 */
   const makeObj=name=>{
@@ -560,7 +600,7 @@ function upb(){
 
 function toDateStr(m){return m[1]+'-'+String(m[2]).padStart(2,'0')+'-'+String(m[3]).padStart(2,'0');}
 function parseText(text){
-  const stocks=[];const today=new Date().toISOString().slice(0,10);let curDate=today;
+  const stocks=[];const today=todayStr();let curDate=today;
   let curSentiment='neutral'; /* 긍정/중립/부정 구간 추적 */
   const lines=text.split('\n').map(l=>l.trim()).filter(Boolean);let cur=null;
   const skipW=['기본 통계','중복 추천','높은 괴리율','가격 괴리율','종목 추천 분석','선정된 종목','조건:','총 추천','고유 종목','평균 수익','최고 수익','장 시작 전','핵심 뉴스','투자자 핵심','브리핑'];
@@ -615,7 +655,7 @@ function parseBriefing(text){
         .forEach(n=>{sentimentMap[n]=curSentiment;});
     }
   }
-  const date=parsedDate||new Date().toISOString().slice(0,10);
+  const date=parsedDate||todayStr();
   return{date,sentimentMap};
 }
 
@@ -636,9 +676,9 @@ async function run(){
       ex.targetHistory=ex.targetHistory.filter(h=>h&&typeof h.target==='number'&&!isNaN(h.target));
       if(!ex.targetHistory.find(h=>h.date===s.date&&h.target===s.target))ex.targetHistory.push({date:s.date,target:s.target});
       ex.targetHistory.sort((a,b)=>(a.date||'').localeCompare(b.date||''));
-      const h=ex.targetHistory;const latest=h[h.length-1].target;const prev2=h.length>=2?h[h.length-2].target:latest;
-      const chg=prev2?(latest-prev2)/prev2:0;
-      if(chg>=STATUS_THRESHOLD)ex.status='up';else if(chg<=-STATUS_THRESHOLD)ex.status='down';else ex.status='same';
+      /* 상향/하향 판정 — 날짜별 평균가 기반 (당일 다회 추천은 평균으로 묶음) */
+      ex.status=computeStatus(ex.targetHistory);
+      const h=ex.targetHistory;const latest=h[h.length-1].target;
       Object.assign(ex,{target:latest,prev:s.prev,gap:s.gap,opinion:s.opinion,reason:s.reason,date:s.date,sentiment:s.sentiment||'neutral'});
     }
   });
@@ -711,7 +751,7 @@ function rmStock(n){
 
 function autoClean(){
   const cutoff=new Date();cutoff.setDate(cutoff.getDate()-180);
-  const cutoffStr=cutoff.toISOString().slice(0,10);
+  const cutoffStr=dateStr(cutoff);
   let changed=false;
   Object.keys(db.watchlist).forEach(name=>{
     const s=db.watchlist[name];
@@ -729,12 +769,12 @@ if('serviceWorker' in navigator){
 
 db=lsGet();
 Object.values(db.watchlist).forEach(s=>{
-  if(s.targetHistory&&s.targetHistory.length>1){
-    s.targetHistory.sort((a,b)=>a.date.localeCompare(b.date));
-    const h=s.targetHistory;const latest=h[h.length-1].target;const prev=h[h.length-2].target;
-    const chg=prev?(latest-prev)/prev:0;
-    if(chg>=STATUS_THRESHOLD)s.status='up';else if(chg<=-STATUS_THRESHOLD)s.status='down';else s.status='same';
-    s.target=latest;
+  if(s.targetHistory&&s.targetHistory.length>0){
+    s.targetHistory.sort((a,b)=>(a.date||'').localeCompare(b.date||''));
+    /* 날짜별 평균가 기반으로 재계산 — 비교 가능한 이전 날짜 없으면 'new' */
+    s.status=computeStatus(s.targetHistory);
+    const h=s.targetHistory;
+    if(h.length)s.target=h[h.length-1].target;
   }
 });
 autoClean();
